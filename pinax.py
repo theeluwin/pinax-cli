@@ -87,13 +87,15 @@ def start(config, dev, project, name):
     payload = requests.get(config.url).json()
     if payload.get("version") == 1:
         projects = payload.get("projects")
-        if dev or len(projects[project]["releases"]) > 0:
+        if project not in projects:
+            click.echo("There is no project named '{}'. Type 'pinax projects' to see available projects.".format(project))
+        elif dev or len(projects[project]["releases"]) > 0:
             pip_install("Django")
             start_project(projects[project], name, dev)
             click.echo("Finished")
             output_instructions(projects[project], name)
             cleanup(name)
         else:
-            click.echo("There are no releases for {}. You need to specify the --dev flag to use.".format(start))
+            click.echo("There are no releases for '{}'. You need to specify the --dev flag to use.".format(project))
     else:
         click.echo("The projects manifest you are trying to consume will not work: \n{}".format(config.url))
